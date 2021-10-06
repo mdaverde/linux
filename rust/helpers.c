@@ -11,6 +11,8 @@
 #include <linux/mutex.h>
 #include <linux/platform_device.h>
 #include <linux/security.h>
+#include <linux/preempt.h>
+#include <linux/cred.h>
 #include <asm/io.h>
 
 __noreturn void rust_helper_BUG(void)
@@ -245,6 +247,43 @@ struct task_struct *rust_helper_get_current(void)
 	return current;
 }
 EXPORT_SYMBOL_GPL(rust_helper_get_current);
+
+bool rust_helper_in_task(void)
+{
+	return in_task();
+}
+EXPORT_SYMBOL_GPL(rust_helper_in_task);
+
+kuid_t rust_helper_current_uid(void)
+{
+	return current_uid();
+}
+EXPORT_SYMBOL_GPL(rust_helper_current_uid);
+
+kgid_t rust_helper_current_gid(void)
+{
+	return current_gid();
+}
+EXPORT_SYMBOL_GPL(rust_helper_current_gid);
+
+kuid_t rust_helper_current_euid(void)
+{
+	return current_euid();
+}
+EXPORT_SYMBOL_GPL(rust_helper_current_euid);
+
+pid_t rust_helper_task_pid_nr(struct task_struct * t)
+{
+	return task_pid_nr(t);
+}
+EXPORT_SYMBOL_GPL(rust_helper_task_pid_nr);
+
+// Pointer spacing in param consistent with kernel style?
+pid_t rust_helper_task_tgid_nr(struct task_struct * t)
+{
+	return task_tgid_nr(t);
+}
+EXPORT_SYMBOL_GPL(rust_helper_task_tgid_nr);
 
 void rust_helper_get_task_struct(struct task_struct * t)
 {

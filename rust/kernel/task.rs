@@ -5,6 +5,9 @@
 //! C header: [`include/linux/sched.h`](../../../../include/linux/sched.h).
 
 use crate::bindings;
+use crate::str::CStr;
+use crate::c_str;
+use crate::c_types;
 use core::{marker::PhantomData, mem::ManuallyDrop, ops::Deref};
 
 /// Wraps the kernel's `struct task_struct`.
@@ -102,6 +105,22 @@ impl Task {
         // SAFETY: By the type invariant, we know that `self.ptr` is non-null and valid.
         unsafe { (*self.ptr).pid }
     }
+
+    // TODO: add documentation
+    pub fn tgid(&self) -> Pid {
+        unsafe { bindings::task_tgid_nr(self.ptr) }
+    }
+
+    // Consider using CStr here
+    // Adding the macro get_task_comm to bindings doesn't work:
+    // Get: ld.lld: error: undefined symbol: __compiletime_assert_316
+    pub fn comm(&self) -> [c_types::c_char; bindings::TASK_COMM_LEN as usize] {
+        let mut buf = [0; bindings::TASK_COMM_LEN as usize];
+        unsafe { bindings::__get_task_comm(&mut buf as *mut c_types::c_char, bindings::TASK_COMM_LEN as usize, self.ptr) };
+        return buf
+    }
+
+    // TODO: Consider adding pid by namespace
 
     /// Determines whether the given task has pending signals.
     pub fn signal_pending(&self) -> bool {
