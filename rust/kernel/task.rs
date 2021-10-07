@@ -77,6 +77,9 @@ unsafe impl Sync for Task {}
 /// The type of process identifiers (PIDs).
 type Pid = bindings::pid_t;
 
+// TODO: should live here? maybe under a uidgid module?
+type Uid = bindings::uid_t;
+
 impl Task {
     /// Returns a task reference for the currently executing task/thread.
     pub fn current<'a>() -> TaskRef<'a> {
@@ -101,6 +104,7 @@ impl Task {
     }
 
     /// Returns the PID of the given task.
+    // TODO: Consider adding pid by namespace?
     pub fn pid(&self) -> Pid {
         // SAFETY: By the type invariant, we know that `self.ptr` is non-null and valid.
         unsafe { (*self.ptr).pid }
@@ -109,6 +113,21 @@ impl Task {
     // TODO: add documentation
     pub fn tgid(&self) -> Pid {
         unsafe { bindings::task_tgid_nr(self.ptr) }
+    }
+
+    // TODO: Consider adding uid by namespace?
+    pub fn uid(&self) -> Uid {
+        // Global wrapper for these?
+        // Should use current_user_ns()?
+        let init_user_ns = unsafe { &mut bindings::init_user_ns as *mut bindings::user_namespace };
+        unsafe { bindings::from_kuid(init_user_ns, bindings::task_uid(self.ptr)) }
+    }
+
+    // TODO: Consider adding uid by namespace?
+    pub fn euid(&self) -> Uid {
+        let init_user_ns = unsafe { &mut bindings::init_user_ns as *mut bindings::user_namespace };
+        // Should use from_kuid_munged?
+        unsafe { bindings::from_kuid(init_user_ns, bindings::task_euid(self.ptr)) }
     }
 
     // Consider using CStr here
@@ -120,8 +139,6 @@ impl Task {
         unsafe { bindings::__get_task_comm(&mut buf as *mut c_types::c_char, bindings::TASK_COMM_LEN as usize, self.ptr) };
         return buf
     }
-
-    // TODO: Consider adding pid by namespace
 
     /// Determines whether the given task has pending signals.
     pub fn signal_pending(&self) -> bool {
@@ -212,12 +229,15 @@ impl ProcessIterator<'_> {
         unsafe { Self::from_ptr(init_task_ptr) }
     }
 
+    // TODO: should this be pub?
     pub unsafe fn from_ptr(ptr: *mut bindings::task_struct) -> Self {
         ProcessIterator {
             task_ptr: ptr,
             _not_send: PhantomData
         }
     }
+
+    // TODO: consider from_task()? to allow traversal from a held task
 }
 
 impl<'a> Iterator for ProcessIterator<'a> {

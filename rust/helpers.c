@@ -248,37 +248,43 @@ struct task_struct *rust_helper_get_current(void)
 }
 EXPORT_SYMBOL_GPL(rust_helper_get_current);
 
+/* new stuff */
+
 bool rust_helper_in_task(void)
 {
 	return in_task();
 }
 EXPORT_SYMBOL_GPL(rust_helper_in_task);
 
+// Do I need this?
 kuid_t rust_helper_current_uid(void)
 {
 	return current_uid();
 }
 EXPORT_SYMBOL_GPL(rust_helper_current_uid);
 
+// Do I need this?
 kgid_t rust_helper_current_gid(void)
 {
 	return current_gid();
 }
 EXPORT_SYMBOL_GPL(rust_helper_current_gid);
 
+// Do I need this?
 kuid_t rust_helper_current_euid(void)
 {
 	return current_euid();
 }
 EXPORT_SYMBOL_GPL(rust_helper_current_euid);
 
+// Do I need this?
 pid_t rust_helper_task_pid_nr(struct task_struct * t)
 {
 	return task_pid_nr(t);
 }
 EXPORT_SYMBOL_GPL(rust_helper_task_pid_nr);
 
-// Pointer spacing in param consistent with kernel style?
+// TODO: Pointer spacing in param consistent with kernel style?
 pid_t rust_helper_task_tgid_nr(struct task_struct * t)
 {
 	return task_tgid_nr(t);
@@ -290,6 +296,20 @@ struct task_struct *rust_helper_next_task(struct task_struct *tsk)
 	return next_task(tsk);
 }
 EXPORT_SYMBOL_GPL(rust_helper_next_task);
+
+kuid_t rust_helper_task_uid(struct task_struct *tsk)
+{
+	return task_uid(tsk);
+}
+EXPORT_SYMBOL_GPL(rust_helper_task_uid);
+
+kuid_t rust_helper_task_euid(struct task_struct *tsk)
+{
+	return task_euid(tsk);
+}
+EXPORT_SYMBOL_GPL(rust_helper_task_euid);
+
+/* end of new stuff */
 
 void rust_helper_get_task_struct(struct task_struct * t)
 {
