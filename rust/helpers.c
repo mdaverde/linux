@@ -285,6 +285,12 @@ pid_t rust_helper_task_tgid_nr(struct task_struct * t)
 }
 EXPORT_SYMBOL_GPL(rust_helper_task_tgid_nr);
 
+struct task_struct *rust_helper_next_task(struct task_struct *tsk)
+{
+	return next_task(tsk);
+}
+EXPORT_SYMBOL_GPL(rust_helper_next_task);
+
 void rust_helper_get_task_struct(struct task_struct * t)
 {
 	get_task_struct(t);

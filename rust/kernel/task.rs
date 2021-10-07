@@ -8,7 +8,7 @@ use crate::bindings;
 use crate::str::CStr;
 use crate::c_str;
 use crate::c_types;
-use core::{marker::PhantomData, mem::ManuallyDrop, ops::Deref};
+use core::{marker::PhantomData, mem::ManuallyDrop, ops::Deref, iter::Iterator};
 
 /// Wraps the kernel's `struct task_struct`.
 ///
@@ -114,6 +114,7 @@ impl Task {
     // Consider using CStr here
     // Adding the macro get_task_comm to bindings doesn't work:
     // Get: ld.lld: error: undefined symbol: __compiletime_assert_316
+    // Need to use task_lock (<linux/sched/task.h:166>) here? Or should locking be elsewhere?
     pub fn comm(&self) -> [c_types::c_char; bindings::TASK_COMM_LEN as usize] {
         let mut buf = [0; bindings::TASK_COMM_LEN as usize];
         unsafe { bindings::__get_task_comm(&mut buf as *mut c_types::c_char, bindings::TASK_COMM_LEN as usize, self.ptr) };
@@ -197,5 +198,41 @@ impl Deref for TaskRef<'_> {
 
     fn deref(&self) -> &Self::Target {
         self.task.deref()
+    }
+}
+
+pub struct ProcessIterator<'a> {
+    task_ptr: *mut bindings::task_struct,
+    _not_send: PhantomData<(&'a (), *mut ())>,
+}
+
+impl ProcessIterator<'_> {
+    pub fn new() -> Self {
+        let init_task_ptr = unsafe { &mut bindings::init_task as *mut bindings::task_struct };
+        unsafe { Self::from_ptr(init_task_ptr) }
+    }
+
+    pub unsafe fn from_ptr(ptr: *mut bindings::task_struct) -> Self {
+        ProcessIterator {
+            task_ptr: ptr,
+            _not_send: PhantomData
+        }
+    }
+}
+
+impl<'a> Iterator for ProcessIterator<'a> {
+    type Item = TaskRef<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let next_task_ptr = unsafe { bindings::next_task(self.task_ptr) };
+        // TODO: can this be a global? is there an abstraction we can use around mutable statics?
+        let init_task_ptr = unsafe { &mut bindings::init_task as *mut bindings::task_struct };
+        if next_task_ptr.is_null() || next_task_ptr == init_task_ptr {
+            None
+        } else {
+            self.task_ptr = next_task_ptr;
+            let task_ref = unsafe { TaskRef::from_ptr(next_task_ptr) };
+            Some(task_ref)
+        }
     }
 }
