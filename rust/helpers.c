@@ -297,6 +297,12 @@ struct task_struct *rust_helper_next_task(struct task_struct *tsk)
 }
 EXPORT_SYMBOL_GPL(rust_helper_next_task);
 
+struct task_struct *rust_helper_next_thread(struct task_struct *tsk)
+{
+	return next_thread(tsk);
+}
+EXPORT_SYMBOL_GPL(rust_helper_next_thread);
+
 kuid_t rust_helper_task_uid(struct task_struct *tsk)
 {
 	return task_uid(tsk);

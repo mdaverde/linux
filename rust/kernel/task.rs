@@ -140,6 +140,16 @@ impl Task {
         return buf
     }
 
+    // Add SAFETY docs
+    // What should happen here if it's a process?
+    pub fn threads<'a>(&self) -> ThreadIterator<'a> {
+        ThreadIterator {
+            proc_task_ptr: self.ptr,
+            thread_task_ptr: core::ptr::null_mut(),
+            _not_send: PhantomData
+        }
+    }
+
     /// Determines whether the given task has pending signals.
     pub fn signal_pending(&self) -> bool {
         // SAFETY: By the type invariant, we know that `self.ptr` is non-null and valid.
@@ -218,6 +228,9 @@ impl Deref for TaskRef<'_> {
     }
 }
 
+
+// Single iterator for all tasks? (processes & threads)
+// Is PhantomData working here?
 pub struct ProcessIterator<'a> {
     task_ptr: *mut bindings::task_struct,
     _not_send: PhantomData<(&'a (), *mut ())>,
@@ -229,7 +242,7 @@ impl ProcessIterator<'_> {
         unsafe { Self::from_ptr(init_task_ptr) }
     }
 
-    // TODO: should this be pub?
+    // TODO: should this be pub? To allow the initial task to start the traversal from
     pub unsafe fn from_ptr(ptr: *mut bindings::task_struct) -> Self {
         ProcessIterator {
             task_ptr: ptr,
@@ -237,7 +250,8 @@ impl ProcessIterator<'_> {
         }
     }
 
-    // TODO: consider from_task()? to allow traversal from a held task
+    // TODO: consider from_task() equivalent? to allow traversal from a held task.
+    // I guess we don't know if a task is always a process so we should check that
 }
 
 impl<'a> Iterator for ProcessIterator<'a> {
@@ -256,3 +270,29 @@ impl<'a> Iterator for ProcessIterator<'a> {
         }
     }
 }
+pub struct ThreadIterator<'a> {
+    proc_task_ptr: *mut bindings::task_struct,
+    thread_task_ptr: *mut bindings::task_struct,
+    _not_send: PhantomData<(&'a (), *mut ())>,
+}
+
+impl<'a> Iterator for ThreadIterator<'a> {
+    type Item = TaskRef<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        // Should we include the process task within the thread tasks?
+        if self.thread_task_ptr.is_null() {
+            self.thread_task_ptr = self.proc_task_ptr;
+            let task_ref = unsafe { TaskRef::from_ptr(self.thread_task_ptr) };
+            return Some(task_ref);
+        }
+        let next_thread_ptr = unsafe { bindings::next_thread(self.thread_task_ptr) };
+        if next_thread_ptr.is_null() || next_thread_ptr == self.proc_task_ptr {
+            None
+        } else {
+            self.thread_task_ptr = next_thread_ptr;
+            Some(unsafe { TaskRef::from_ptr(self.thread_task_ptr) })
+        }
+    }
+}
+
