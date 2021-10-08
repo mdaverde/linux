@@ -5,10 +5,10 @@
 //! C header: [`include/linux/sched.h`](../../../../include/linux/sched.h).
 
 use crate::bindings;
-use crate::str::CStr;
 use crate::c_str;
 use crate::c_types;
-use core::{marker::PhantomData, mem::ManuallyDrop, ops::Deref, iter::Iterator};
+use crate::str::CStr;
+use core::{iter::Iterator, marker::PhantomData, mem::ManuallyDrop, ops::Deref};
 
 /// Wraps the kernel's `struct task_struct`.
 ///
@@ -136,8 +136,14 @@ impl Task {
     // Need to use task_lock (<linux/sched/task.h:166>) here? Or should locking be elsewhere?
     pub fn comm(&self) -> [c_types::c_char; bindings::TASK_COMM_LEN as usize] {
         let mut buf = [0; bindings::TASK_COMM_LEN as usize];
-        unsafe { bindings::__get_task_comm(&mut buf as *mut c_types::c_char, bindings::TASK_COMM_LEN as usize, self.ptr) };
-        return buf
+        unsafe {
+            bindings::__get_task_comm(
+                &mut buf as *mut c_types::c_char,
+                bindings::TASK_COMM_LEN as usize,
+                self.ptr,
+            )
+        };
+        return buf;
     }
 
     // Add SAFETY docs
@@ -146,7 +152,7 @@ impl Task {
         ThreadIterator {
             proc_task_ptr: self.ptr,
             thread_task_ptr: core::ptr::null_mut(),
-            _not_send: PhantomData
+            _not_send: PhantomData,
         }
     }
 
@@ -228,7 +234,6 @@ impl Deref for TaskRef<'_> {
     }
 }
 
-
 // Single iterator for all tasks? (processes & threads)
 // Is PhantomData working here?
 pub struct ProcessIterator<'a> {
@@ -246,7 +251,7 @@ impl ProcessIterator<'_> {
     pub unsafe fn from_ptr(ptr: *mut bindings::task_struct) -> Self {
         ProcessIterator {
             task_ptr: ptr,
-            _not_send: PhantomData
+            _not_send: PhantomData,
         }
     }
 
@@ -295,4 +300,3 @@ impl<'a> Iterator for ThreadIterator<'a> {
         }
     }
 }
-
