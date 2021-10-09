@@ -130,20 +130,20 @@ impl Task {
         unsafe { bindings::from_kuid(init_user_ns, bindings::task_euid(self.ptr)) }
     }
 
-    // Consider using CStr here
-    // Adding the macro get_task_comm to bindings doesn't work:
+    // Adding the macro get_task_comm to bindings doesn't work?
     // Get: ld.lld: error: undefined symbol: __compiletime_assert_316
     // Need to use task_lock (<linux/sched/task.h:166>) here? Or should locking be elsewhere?
-    pub fn comm(&self) -> [c_types::c_char; bindings::TASK_COMM_LEN as usize] {
-        let mut buf = [0; bindings::TASK_COMM_LEN as usize];
-        unsafe {
-            bindings::__get_task_comm(
-                &mut buf as *mut c_types::c_char,
-                bindings::TASK_COMM_LEN as usize,
-                self.ptr,
-            )
-        };
-        return buf;
+    // __get_task_comm uses a spin lock which is bad practice in sleeping contexts
+    pub fn comm(&self) -> &CStr {
+        // let mut buf = [0; bindings::TASK_COMM_LEN as usize];
+        // unsafe {
+        //     bindings::__get_task_comm(
+        //         &mut buf as *mut c_types::c_char,
+        //         bindings::TASK_COMM_LEN as usize,
+        //         self.ptr,
+        //     )
+        // };
+        return unsafe { CStr::from_char_ptr(&(*self.ptr).comm as *const c_types::c_char) };
     }
 
     // Add SAFETY docs
