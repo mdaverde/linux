@@ -460,7 +460,7 @@ impl core::fmt::Display for StringParam {
         let bytes = self.bytes();
         match core::str::from_utf8(bytes) {
             Ok(utf8) => write!(f, "{}", utf8),
-            Err(_) => write!(f, "{:?}", bytes),
+            Err(_) => write!(f, "{:?}", bytes), // Is this what we want?
         }
     }
 }

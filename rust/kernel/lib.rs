@@ -79,9 +79,9 @@ pub mod io_mem;
 pub mod iov_iter;
 pub mod of;
 pub mod platdev;
+pub mod preempt;
 mod types;
 pub mod user_ptr;
-pub mod preempt;
 
 #[doc(hidden)]
 pub use build_error::build_error;

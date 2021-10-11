@@ -155,6 +155,18 @@ impl Task {
         }
     }
 
+    pub fn mm<'a>(&self) -> Option<MemoryDesc<'a>> {
+        let mm_ptr = unsafe { (*self.ptr).mm };
+        if mm_ptr.is_null() {
+            None
+        } else {
+            Some(MemoryDesc {
+                ptr: mm_ptr,
+                _not_send: PhantomData,
+            })
+        }
+    }
+
     /// Determines whether the given task has pending signals.
     pub fn signal_pending(&self) -> bool {
         // SAFETY: By the type invariant, we know that `self.ptr` is non-null and valid.
@@ -261,6 +273,7 @@ impl ProcessIterator<'_> {
 impl<'a> Iterator for ProcessIterator<'a> {
     type Item = TaskRef<'a>;
 
+    // Kernel's for_each_process()/do_each_thread() skips over &init_task. Should we?
     fn next(&mut self) -> Option<Self::Item> {
         let next_task_ptr = unsafe { bindings::next_task(self.task_ptr) };
         // TODO: can this be a global? is there an abstraction we can use around mutable statics?
@@ -298,4 +311,9 @@ impl<'a> Iterator for ThreadIterator<'a> {
             Some(unsafe { TaskRef::from_ptr(self.thread_task_ptr) })
         }
     }
+}
+
+pub struct MemoryDesc<'a> {
+    pub(crate) ptr: *mut bindings::mm_struct,
+    _not_send: PhantomData<(&'a (), *mut ())>,
 }
