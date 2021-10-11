@@ -81,6 +81,7 @@ pub mod of;
 pub mod platdev;
 mod types;
 pub mod user_ptr;
+pub mod preempt;
 
 #[doc(hidden)]
 pub use build_error::build_error;

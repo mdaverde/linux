@@ -5,7 +5,6 @@
 //! C header: [`include/linux/sched.h`](../../../../include/linux/sched.h).
 
 use crate::bindings;
-use crate::c_str;
 use crate::c_types;
 use crate::str::CStr;
 use core::{iter::Iterator, marker::PhantomData, mem::ManuallyDrop, ops::Deref};
