@@ -172,6 +172,16 @@ impl Task {
         // SAFETY: By the type invariant, we know that `self.ptr` is non-null and valid.
         unsafe { bindings::signal_pending(self.ptr) != 0 }
     }
+
+    // Remove this?
+    pub fn as_ptr(&self) -> *const bindings::task_struct {
+        self.ptr
+    }
+
+    // Remove this?
+    pub fn as_mut_ptr(&self) -> *mut bindings::task_struct {
+        self.ptr
+    }
 }
 
 impl PartialEq for Task {
@@ -259,6 +269,7 @@ impl ProcessIterator<'_> {
     }
 
     // TODO: should this be pub? To allow the initial task to start the traversal from
+    // Can use From<T> here?
     pub unsafe fn from_ptr(ptr: *mut bindings::task_struct) -> Self {
         ProcessIterator {
             task_ptr: ptr,
@@ -314,6 +325,18 @@ impl<'a> Iterator for ThreadIterator<'a> {
 }
 
 pub struct MemoryDesc<'a> {
-    pub(crate) ptr: *mut bindings::mm_struct,
+    ptr: *mut bindings::mm_struct,
     _not_send: PhantomData<(&'a (), *mut ())>,
+}
+
+impl<'a> MemoryDesc<'a> {
+    // Remove this?
+    pub fn as_ptr(&self) -> *const bindings::mm_struct {
+        self.ptr
+    }
+
+    // Remove this?
+    pub fn as_mut_ptr(&self) -> *mut bindings::mm_struct {
+        self.ptr
+    }
 }

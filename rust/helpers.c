@@ -315,6 +315,76 @@ kuid_t rust_helper_task_euid(struct task_struct *tsk)
 }
 EXPORT_SYMBOL_GPL(rust_helper_task_euid);
 
+// constants -- start: remove these?
+
+// is this the right return type? remove this?
+long rust_helper_FIXADDR_START(void)
+{
+	return FIXADDR_START;
+}
+EXPORT_SYMBOL_GPL(rust_helper_FIXADDR_START);
+
+// is this the right return type? remove this?
+#ifdef CONFIG_X86
+long rust_helper_FIXADDR_SIZE(void)
+{
+	return FIXADDR_SIZE;
+}
+EXPORT_SYMBOL_GPL(rust_helper_FIXADDR_SIZE);
+#endif
+
+long rust_helper_VMALLOC_START(void)
+{
+	return VMALLOC_START;
+}
+EXPORT_SYMBOL_GPL(rust_helper_VMALLOC_START);
+
+long rust_helper_VMALLOC_END(void)
+{
+	return VMALLOC_END;
+}
+EXPORT_SYMBOL_GPL(rust_helper_VMALLOC_END);
+
+long rust_helper_MODULES_VADDR(void)
+{
+	return MODULES_VADDR;
+}
+EXPORT_SYMBOL_GPL(rust_helper_MODULES_VADDR);
+
+long rust_helper_MODULES_END(void)
+{
+	return MODULES_END;
+}
+EXPORT_SYMBOL_GPL(rust_helper_MODULES_END);
+
+long rust_helper_PAGE_OFFSET(void)
+{
+	return PAGE_OFFSET;
+}
+EXPORT_SYMBOL_GPL(rust_helper_PAGE_OFFSET);
+
+long rust_helper_TASK_SIZE(void)
+{
+	return TASK_SIZE;
+}
+EXPORT_SYMBOL_GPL(rust_helper_TASK_SIZE);
+
+#ifdef CONFIG_KASAN
+long rust_helper_KASAN_SHADOW_START(void)
+{
+	return KASAN_SHADOW_START;
+}
+EXPORT_SYMBOL_GPL(rust_helper_KASAN_SHADOW_START);
+
+long rust_helper_KASAN_SHADOW_END(void)
+{
+	return KASAN_SHADOW_END;
+}
+EXPORT_SYMBOL_GPL(rust_helper_KASAN_SHADOW_END);
+#endif
+
+// constants -- end
+
 /* end of new stuff */
 
 void rust_helper_get_task_struct(struct task_struct * t)
