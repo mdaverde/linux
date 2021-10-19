@@ -331,12 +331,12 @@ pub struct MemoryDesc<'a> {
 
 impl<'a> MemoryDesc<'a> {
     // Remove this?
-    pub fn as_ptr(&self) -> *const bindings::mm_struct {
-        self.ptr
+    pub fn as_ptr(&self) -> *const bindings::mm_struct__bindgen_ty_1 { // oof, can we make this better?
+        unsafe { &(*self.ptr).__bindgen_anon_1 }
     }
 
     // Remove this?
-    pub fn as_mut_ptr(&self) -> *mut bindings::mm_struct {
-        self.ptr
+    pub fn as_mut_ptr(&self) -> *mut bindings::mm_struct__bindgen_ty_1 { // oof, can we make this better?
+        unsafe { &mut (*self.ptr).__bindgen_anon_1 }
     }
 }
