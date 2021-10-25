@@ -315,16 +315,33 @@ kuid_t rust_helper_task_euid(struct task_struct *tsk)
 }
 EXPORT_SYMBOL_GPL(rust_helper_task_euid);
 
-// constants -- start: remove these?
+unsigned long rust_helper_virt_to_phys(volatile void *address)
+{
+	return virt_to_phys(address);
+}
+EXPORT_SYMBOL_GPL(rust_helper_virt_to_phys);
 
-// is this the right return type? remove this?
+void *rust_helper_phys_to_virt(unsigned long address)
+{
+	return phys_to_virt(address);
+}
+EXPORT_SYMBOL_GPL(rust_helper_phys_to_virt);
+
+// Could be moved into Rust using PAGE_SHIFT
+unsigned long rust_helper_PHYS_PFN(unsigned long address) {
+	return PHYS_PFN(address);
+}
+EXPORT_SYMBOL_GPL(rust_helper_PHYS_PFN);
+
+// constants -- start
+// right return type?
 unsigned long rust_helper_FIXADDR_START(void)
 {
 	return FIXADDR_START;
 }
 EXPORT_SYMBOL_GPL(rust_helper_FIXADDR_START);
 
-// is this the right return type? remove this?
+// right return type?
 #ifdef CONFIG_X86
 unsigned long rust_helper_FIXADDR_SIZE(void)
 {
